@@ -12,12 +12,23 @@
 </head>
 <body>
     <!-- echarts dom -->
-    <div id="covid_daily" style="width: 600px;height:400px;"></div>
+    <div id="covid_daily" style="width:100%;"></div>
     <script type="text/javascript">
-        // 基于准备好的dom，初始化echarts实例
+        // set covid_daily height automatically
+        var autoheight = function(){
+            var winHeight=0;
+            if (window.innerHeight)
+                winHeight = window.innerHeight;
+            else if ((document.body) && (document.body.clientHeight))
+                winHeight = document.body.clientHeight;
+            if (document.documentElement && document.documentElement.clientHeight)
+                winHeight = document.documentElement.clientHeight;
+            document.getElementById("covid_daily").style.height= winHeight +"px";
+        }
+        autoheight();
+        // init echarts
         var covidDaily = echarts.init(document.getElementById('covid_daily'));
-
-        // 指定图表的配置项和数据
+        // chart data
         var option = {
             title: {
                 text: '每日省外新增确诊，新增病死'
@@ -75,9 +86,12 @@
                 }
             ]
         };
-
-        // 使用刚指定的配置项和数据显示图表。
+        // bind data with echarts
         covidDaily.setOption(option);
+        window.addEventListener("resize",function(){
+            autoheight();
+            covidDaily.resize();
+        });
     </script>
 </body>
 </html>
