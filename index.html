@@ -6,28 +6,35 @@
     <title>COVID-19</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <script src="index.js"></script>
     <!-- add echarts -->
     <script src="echarts.min.js"></script>
+    <script src="index.js"></script>
 </head>
 <body>
     <!-- echarts dom -->
     <div id="covid_daily" style="width:100%;"></div>
     <div id="benford_law" style="width:100%;"></div>
     <script type="text/javascript">
-        // set covid_daily height automatically
-        var autoheight = function(){
-            var winHeight=0;
-            if (window.innerHeight)
-                winHeight = window.innerHeight;
-            else if ((document.body) && (document.body.clientHeight))
-                winHeight = document.body.clientHeight;
-            if (document.documentElement && document.documentElement.clientHeight)
-                winHeight = document.documentElement.clientHeight;
-            document.getElementById("covid_daily").style.height= winHeight +"px";
-            document.getElementById("benford_law").style.height= winHeight +"px";
-        }
-        autoheight();
+        var start_date = new Date(2020, 0, 20);
+        var date_list = getDiffDate(start_date, new Date());
+        var daily_diag = [
+            5, 44, 62, 154, 264, 365, 398,
+            480, 619, 705, 762, 755, 669, 726,
+            896, 731, 707, 696, 558, 509, 444,
+            381, 377, 312, 267, 221, 166, 115,
+            79, 56, 45, 258, 31
+        ];
+        var daily_death = [
+            null, 0, 0, 0, 1, 2, 0,
+            2, 1, 1, 1, 1, 0, 1,
+            0, 0, 3, 4, 5, 8, 6,
+            5, 3, 12, 5, 4, 3, 5,
+            5, 4, 6, 3, 3
+        ];
+        // set charts height automatically
+        chartHeight = 0.8 * getWindowHeight();
+        document.getElementById("covid_daily").style.height= chartHeight +"px";
+        document.getElementById("benford_law").style.height= chartHeight +"px";
         // init echarts
         var covidDaily = echarts.init(document.getElementById('covid_daily'));
         var benfordLaw = echarts.init(document.getElementById('benford_law'));
@@ -41,13 +48,7 @@
                 data:['新增确诊', '新增病死']
             },
             xAxis: {
-                data: [
-                    "01-20","01-21","01-22","01-23","01-24","01-25","01-26",
-                    "01-27","01-28","01-29","01-30","01-31","02-01","02-02",
-                    "02-03","02-04","02-05","02-06","02-07","02-08","02-09",
-                    "02-10","02-11","02-12","02-13","02-14","02-15","02-16",
-                    "02-17","02-18","02-19","02-20","02-21"
-                ]
+                data: date_list
             },
             yAxis: {},
             dataZoom: [
@@ -68,24 +69,12 @@
                 {
                     name: '新增确诊',
                     type: 'bar',
-                    data: [
-                        5, 44, 62, 154, 264, 365, 398,
-                        480, 619, 705, 762, 755, 669, 726,
-                        896, 731, 707, 696, 558, 509, 444,
-                        381, 377, 312, 267, 221, 166, 115,
-                        79, 56, 45, 258, 31
-                    ]
+                    data: daily_diag
                 },
                 {
                     name: '新增病死',
                     type: 'bar',
-                    data: [
-                        null, 0, 0, 0, 1, 2, 0,
-                        2, 1, 1, 1, 1, 0, 1,
-                        0, 0, 3, 4, 5, 8, 6,
-                        5, 3, 12, 5, 4, 3, 5,
-                        5, 4, 6, 3, 3
-                    ]
+                    data: daily_death
                 }
             ]
         };
@@ -127,7 +116,8 @@
         covidDaily.setOption(covidOption);
         benfordLaw.setOption(benfordOption);
         window.addEventListener("resize",function(){
-            autoheight();
+            document.getElementById("covid_daily").style.height= chartHeight +"px";
+            document.getElementById("benford_law").style.height= chartHeight +"px";
             covidDaily.resize();
             benfordLaw.resize();
         });
