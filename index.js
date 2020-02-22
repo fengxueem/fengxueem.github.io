@@ -20,3 +20,19 @@ var getDiffDate = function(start, end) {
     }
     return dateArr;
 }
+
+var histBenford = function(numbers) {
+    hist = [
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0
+    ];
+    numbers.forEach(function(element) {
+        var elementArr = element.toString().split('');
+        var fistDigit = elementArr[0];
+        hist[fistDigit-1]++;
+    });
+    for(let i = 0; i < 10; ++i){
+        hist[i] /= numbers.length
+    }
+    return hist;
+}
