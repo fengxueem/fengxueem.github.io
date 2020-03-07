@@ -11,57 +11,50 @@
     <script src="index.js"></script>
 </head>
 <body>
-    <!-- echarts dom -->
-    <div id="covid_daily" style="width:100%;"></div>
-    <div id="benford_law" style="width:100%;"></div>
-    <div id="pain_surgery" style="width:100%;"></div>
     <script type="text/javascript">
-        var start_date = new Date(2020, 0, 20);
-        var pain_start_date = new Date(2020, 1, 24);
-        var date_list = getDiffDate(start_date, new Date());
-        var pain_date_list = getDiffDate(pain_start_date, new Date());
-        var daily_diag = [
+        // must manually set up start date for each country and of course pair the country with date
+        var contry_list = {
+            'cn' : {'start_date' : new Date(2020, 0, 20), 'name' : '中国湖北省外(不含港澳台)'}, 
+            'de' : {'start_date' : new Date(2020, 1, 25), 'name' : '德国'}, 
+        };
+        var echart_list = [];
+        // manually record daily data
+        var cn_daily_diag = [
             5, 44, 62, 154, 264, 365, 398,
             480, 619, 705, 762, 755, 669, 726,
             896, 731, 707, 696, 558, 509, 444,
             381, 377, 312, 267, 221, 166, 115,
             79, 56, 45, 258, 31, 18, 11,
             9, 5, 24, 9, 4, 3, 6,
-            11, 4, 5, 17
+            11, 4, 5, 17, 25
         ];
-        var daily_death = [
+        var cn_daily_death = [
             null, 0, 0, 0, 1, 2, 0,
             2, 1, 1, 1, 1, 0, 1,
             0, 0, 3, 4, 5, 8, 6,
             5, 3, 12, 5, 4, 3, 5,
             5, 4, 6, 3, 3, 1, 1,
             3, 0, 3, 3, 2, 1, 0,
-            0, 1, 0, 1
+            0, 1, 0, 1, 0
         ];
-        var pain_level = [
-            1, 5, 5, 10, 2, 1, 5, 5,
-            1, 1, 1, 1
+        var de_daily_diag = [
+            2, 3, 5, 27, 13, 51, 34,
+            37, 52, 109, 290,
         ];
-        // set charts height automatically
-        chartHeight = 0.8 * getWindowHeight();
-        document.getElementById("covid_daily").style.height= chartHeight +"px";
-        document.getElementById("benford_law").style.height= chartHeight +"px";
-        document.getElementById("pain_surgery").style.height= chartHeight +"px";
-        // init echarts
-        var covidDaily = echarts.init(document.getElementById('covid_daily'));
-        var benfordLaw = echarts.init(document.getElementById('benford_law'));
-        var painDaily = echarts.init(document.getElementById('pain_surgery'));
-        // chart data
-        var covidOption = {
+        var de_daily_death = [
+            0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0,
+        ];
+        var covidOptionBase = {
             title: {
-                text: '每日省外新增确诊，新增病死(不含港澳台)'
+                text: '每日新增确诊，新增病死'
             },
             tooltip: {},
             legend: {
                 data:['新增确诊', '新增病死']
             },
             xAxis: {
-                data: date_list
+                data:[] 
             },
             yAxis: {},
             dataZoom: [
@@ -82,16 +75,16 @@
                 {
                     name: '新增确诊',
                     type: 'line',
-                    data: daily_diag
+                    // data: daily_diag
                 },
                 {
                     name: '新增病死',
                     type: 'bar',
-                    data: daily_death
+                    // data: daily_death
                 }
             ]
         };
-        var benfordOption = {
+        var benfordOptionBase = {
             title: {
                 text: '每日新增确诊本福特验证'
             },
@@ -118,41 +111,54 @@
                 {
                     name: '实际结果',
                     type: 'bar',
-                    data: histBenford(daily_diag)
+                    // data: histBenford(daily_diag)
                 }
             ]
         };
-        var painOption = {
-            title: {
-                text: '自助记录'
-            },
-            tooltip: {},
-            legend: {
-                data:['主观疼痛']
-            },
-            xAxis: {
-                data: pain_date_list
-            },
-            yAxis: {},
-            series: [
-                {
-                    name: '主观疼痛',
-                    type: 'line',
-                    data: pain_level
-                }
-            ]
-        };
-        // bind data with echarts
-        covidDaily.setOption(covidOption);
-        benfordLaw.setOption(benfordOption);
-        painDaily.setOption(painOption);
+        chartHeight = 0.8 * getWindowHeight();
+        for(var key in contry_list) {
+            // create div element
+            var createCovidDailyDiv = document.createElement("div");  
+            var createBenfordLawDiv = document.createElement("div");  
+            createCovidDailyDiv.style.width = "100%";  
+            createCovidDailyDiv.style.height = chartHeight +"px";  
+            createCovidDailyDiv.id = key + '_covid_daily';  
+            createBenfordLawDiv.style.width = "100%";  
+            createBenfordLawDiv.style.height = chartHeight +"px";  
+            createBenfordLawDiv.id = key + '_benford_law';
+            // append divs to the end of the html body
+            document.body.appendChild(createCovidDailyDiv);  
+            document.body.appendChild(createBenfordLawDiv);
+            // create echart
+            var covidDaily = echarts.init(createCovidDailyDiv);
+            var benfordLaw = echarts.init(createBenfordLawDiv);
+            var date_list = getDiffDate(contry_list[key].start_date, new Date());
+            // set up options of covid
+            var covidOption = copy_obj(covidOptionBase)
+            covidOption.title.text = contry_list[key].name + covidOption.title.text
+            covidOption.xAxis.data = date_list
+            covidOption.series[0].data = eval(key + '_daily_diag')
+            covidOption.series[1].data = eval(key + '_daily_death')
+            // set up options of benford
+            var benfordOption = copy_obj(benfordOptionBase)
+            benfordOption.title.text = contry_list[key].name + benfordOption.title.text
+            benfordOption.series[1].data = histBenford(eval(key + '_daily_diag'))
+            // bind data with echarts
+            covidDaily.setOption(covidOption);
+            benfordLaw.setOption(benfordOption);
+            // add echarts to global list for future modification
+            echart_list.push(covidDaily);
+            echart_list.push(benfordLaw);
+        }
         window.addEventListener("resize",function(){
-            document.getElementById("covid_daily").style.height= chartHeight +"px";
-            document.getElementById("benford_law").style.height= chartHeight +"px";
-            document.getElementById("pain_surgery").style.height= chartHeight +"px";
-            covidDaily.resize();
-            benfordLaw.resize();
-            painDaily.resize();
+            chartHeight = 0.8 * getWindowHeight();
+            for(var key in contry_list) {
+                document.getElementById(key + "_covid_daily").style.height = chartHeight +"px";
+                document.getElementById(key + "_benford_law").style.height = chartHeight +"px";
+            }
+            for(var key in echart_list) {
+                echart_list[key].resize();
+            }
         });
     </script>
 </body>

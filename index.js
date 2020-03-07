@@ -36,3 +36,15 @@ var histBenford = function(numbers) {
     }
     return hist;
 }
+
+var copy_obj = function(obj) {
+    var newobj = obj.constructor === Array ? [] : {};
+    if(typeof obj !== 'object'){
+        return;
+    }
+    for(var i in obj){
+       newobj[i] = typeof obj[i] === 'object' ?
+       copy_obj(obj[i]) : obj[i];
+    }
+    return newobj
+}
