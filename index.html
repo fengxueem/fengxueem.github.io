@@ -14,8 +14,8 @@
     <script type="text/javascript">
         // must manually set up start date for each country and of course pair the country with date
         var contry_list = {
-            'cn' : {'start_date' : new Date(2020, 0, 20), 'name' : '中国湖北省外(不含港澳台)'}, 
-            'de' : {'start_date' : new Date(2020, 1, 25), 'name' : '德国'}, 
+            'cn' : {'start_date' : new Date(2020, 0, 20), 'name' : '中国湖北省外(不含港澳台)', 'source' : 'http://www.nhc.gov.cn/yjb/pqt/new_list.shtml'}, 
+            'de' : {'start_date' : new Date(2020, 1, 25), 'name' : '德国', 'source' : 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_Germany'}, 
         };
         var echart_list = [];
         // manually record daily data
@@ -51,7 +51,8 @@
         ];
         var covidOptionBase = {
             title: {
-                text: '每日新增确诊，新增病死'
+                text: '每日新增确诊，新增病死',
+                subtext: '数据源：'
             },
             tooltip: {},
             legend: {
@@ -140,6 +141,7 @@
             // set up options of covid
             var covidOption = copy_obj(covidOptionBase)
             covidOption.title.text = contry_list[key].name + covidOption.title.text
+            covidOption.title.subtext = covidOption.title.subtext + contry_list[key].source
             covidOption.xAxis.data = date_list
             covidOption.series[0].data = eval(key + '_daily_diag')
             covidOption.series[1].data = eval(key + '_daily_death')
