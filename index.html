@@ -90,6 +90,18 @@
             ]
         };
         var benfordOptionBase = {
+            timeline: {
+                axisType: 'time',
+                loop: true,
+                autoPlay: true,
+                playInterval: 800,
+                left: 'left',
+                right: 0,
+                symbolSize: 4,
+                label:{
+                    show: false
+                }
+            },
             title: {
                 text: '每日新增确诊本福特验证'
             },
@@ -137,21 +149,40 @@
             // create echart
             var covidDaily = echarts.init(createCovidDailyDiv);
             var benfordLaw = echarts.init(createBenfordLawDiv);
-            var date_list = getDiffDate(contry_list[key].start_date, new Date());
+            var today = new Date();
+            var date_list = getDiffDate(contry_list[key].start_date, new Date(today.getTime() - 24*60*60*1000));
             // set up options of covid
-            var covidOption = copy_obj(covidOptionBase)
-            covidOption.title.text = contry_list[key].name + covidOption.title.text
-            covidOption.title.subtext = covidOption.title.subtext + contry_list[key].source
-            covidOption.xAxis.data = date_list
-            covidOption.series[0].data = eval(key + '_daily_diag')
-            covidOption.series[1].data = eval(key + '_daily_death')
+            var covidOption = copy_obj(covidOptionBase);
+            covidOption.title.text = contry_list[key].name + covidOption.title.text;
+            covidOption.title.subtext = covidOption.title.subtext + contry_list[key].source;
+            covidOption.xAxis.data = date_list;
+            covidOption.series[0].data = eval(key + '_daily_diag');
+            covidOption.series[1].data = eval(key + '_daily_death');
             // set up options of benford
-            var benfordOption = copy_obj(benfordOptionBase)
-            benfordOption.title.text = contry_list[key].name + benfordOption.title.text
-            benfordOption.series[1].data = histBenford(eval(key + '_daily_diag'))
+            benfordOptionBase.timeline.data = date_list;
+            var benfordOptions = [];
+            for (var index = 0; index < date_list.length; index++) {
+                var this_day_diag = copy_obj(eval(key + '_daily_diag'));
+                this_day_diag = this_day_diag.splice(0, index);
+                var this_option = {
+                    title: {
+                        text: contry_list[key].name + date_list[index] + benfordOptionBase.title.text
+                    },
+                    series: [
+                        {data: benfordOptionBase.series[0].data},
+                        {data: histBenford(this_day_diag)}
+                    ]
+                };
+                benfordOptions.push(this_option);
+            }
             // bind data with echarts
             covidDaily.setOption(covidOption);
-            benfordLaw.setOption(benfordOption);
+            benfordLaw.setOption(
+                {
+                    baseOption: benfordOptionBase,
+                    options: benfordOptions
+                }
+            );
             // add echarts to global list for future modification
             echart_list.push(covidDaily);
             echart_list.push(benfordLaw);
