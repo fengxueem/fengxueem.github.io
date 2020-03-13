@@ -13,42 +13,50 @@
 <body>
     <script type="text/javascript">
         // must manually set up start date for each country and of course pair the country with date
-        var contry_list = {
-            'cn' : {'start_date' : new Date(2020, 0, 20), 'name' : '中国湖北省外(不含港澳台)', 'source' : 'http://www.nhc.gov.cn/yjb/pqt/new_list.shtml'}, 
-            'de' : {'start_date' : new Date(2020, 1, 25), 'name' : '德国', 'source' : 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_Germany'}, 
+        var country_list = {
+            'cn' : {
+                'start_date' : new Date(2020, 0, 20),
+                'name' : '中国湖北省外(不含港澳台)',
+                'source' : 'http://www.nhc.gov.cn/yjb/pqt/new_list.shtml',
+                'daily_diag' : [
+                    5, 44, 62, 154, 264, 365, 398,
+                    480, 619, 705, 762, 755, 669, 726,
+                    896, 731, 707, 696, 558, 509, 444,
+                    381, 377, 312, 267, 221, 166, 115,
+                    79, 56, 45, 258, 31, 18, 11,
+                    9, 5, 24, 9, 4, 3, 6,
+                    11, 4, 5, 17, 25, 3, 4, 
+                    2, 11, 7
+                ],
+                'daily_death' : [
+                    null, 0, 0, 0, 1, 2, 0,
+                    2, 1, 1, 1, 1, 0, 1,
+                    0, 0, 3, 4, 5, 8, 6,
+                    5, 3, 12, 5, 4, 3, 5,
+                    5, 4, 6, 3, 3, 1, 1,
+                    3, 0, 3, 3, 2, 1, 0,
+                    0, 1, 0, 1, 0, 0, 1,
+                    0, 0, 1
+                ]
+            }, 
+            'de' : {
+                'start_date' : new Date(2020, 1, 25),
+                'name' : '德国',
+                'source' : 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_Germany',
+                'daily_diag' : [
+                    2, 3, 5, 27, 13, 51, 33,
+                    38, 52, 109, 185, 150, 163, 265,
+                    453, 401
+                ],
+                'daily_death' : [
+                    0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 2,
+                    0, 1
+                ]
+            }, 
         };
         var echart_list = [];
-        // manually record daily data
-        var cn_daily_diag = [
-            5, 44, 62, 154, 264, 365, 398,
-            480, 619, 705, 762, 755, 669, 726,
-            896, 731, 707, 696, 558, 509, 444,
-            381, 377, 312, 267, 221, 166, 115,
-            79, 56, 45, 258, 31, 18, 11,
-            9, 5, 24, 9, 4, 3, 6,
-            11, 4, 5, 17, 25, 3, 4, 
-            2, 11, 7
-        ];
-        var cn_daily_death = [
-            null, 0, 0, 0, 1, 2, 0,
-            2, 1, 1, 1, 1, 0, 1,
-            0, 0, 3, 4, 5, 8, 6,
-            5, 3, 12, 5, 4, 3, 5,
-            5, 4, 6, 3, 3, 1, 1,
-            3, 0, 3, 3, 2, 1, 0,
-            0, 1, 0, 1, 0, 0, 1,
-            0, 0, 1
-        ];
-        var de_daily_diag = [
-            2, 3, 5, 27, 13, 51, 33,
-            38, 52, 109, 185, 150, 163, 265,
-            453, 401
-        ];
-        var de_daily_death = [
-            0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 2,
-            0, 1
-        ];
+        // define base options for echarts here
         var covidOptionBase = {
             title: {
                 text: '每日新增确诊，新增病死',
@@ -80,12 +88,10 @@
                 {
                     name: '新增确诊',
                     type: 'line',
-                    // data: daily_diag
                 },
                 {
                     name: '新增病死',
                     type: 'bar',
-                    // data: daily_death
                 }
             ]
         };
@@ -128,12 +134,11 @@
                 {
                     name: '实际结果',
                     type: 'bar',
-                    // data: histBenford(daily_diag)
                 }
             ]
         };
         chartHeight = 0.8 * getWindowHeight();
-        for(var key in contry_list) {
+        for(var key in country_list) {
             // create div element
             var createCovidDailyDiv = document.createElement("div");  
             var createBenfordLawDiv = document.createElement("div");  
@@ -150,23 +155,23 @@
             var covidDaily = echarts.init(createCovidDailyDiv);
             var benfordLaw = echarts.init(createBenfordLawDiv);
             var today = new Date();
-            var date_list = getDiffDate(contry_list[key].start_date, new Date(today.getTime() - 24*60*60*1000));
+            var date_list = getDiffDate(country_list[key].start_date, new Date(today.getTime() - 24*60*60*1000));
             // set up options of covid
             var covidOption = copy_obj(covidOptionBase);
-            covidOption.title.text = contry_list[key].name + covidOption.title.text;
-            covidOption.title.subtext = covidOption.title.subtext + contry_list[key].source;
+            covidOption.title.text = country_list[key].name + covidOption.title.text;
+            covidOption.title.subtext = covidOption.title.subtext + country_list[key].source;
             covidOption.xAxis.data = date_list;
-            covidOption.series[0].data = eval(key + '_daily_diag');
-            covidOption.series[1].data = eval(key + '_daily_death');
+            covidOption.series[0].data = country_list[key].daily_diag;
+            covidOption.series[1].data = country_list[key].daily_death;
             // set up options of benford
             benfordOptionBase.timeline.data = date_list;
             var benfordOptions = [];
             for (var index = 0; index < date_list.length; index++) {
-                var this_day_diag = copy_obj(eval(key + '_daily_diag'));
+                var this_day_diag = copy_obj(country_list[key].daily_diag);
                 this_day_diag = this_day_diag.splice(0, index);
                 var this_option = {
                     title: {
-                        text: contry_list[key].name + date_list[index] + benfordOptionBase.title.text
+                        text: country_list[key].name + date_list[index] + benfordOptionBase.title.text
                     },
                     series: [
                         {data: benfordOptionBase.series[0].data},
@@ -189,7 +194,7 @@
         }
         window.addEventListener("resize",function(){
             chartHeight = 0.8 * getWindowHeight();
-            for(var key in contry_list) {
+            for(var key in country_list) {
                 document.getElementById(key + "_covid_daily").style.height = chartHeight +"px";
                 document.getElementById(key + "_benford_law").style.height = chartHeight +"px";
             }
