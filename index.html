@@ -16,8 +16,8 @@
         var country_list = {
             'cn' : {
                 'start_date' : new Date(2020, 0, 20),
-                'name' : '中国湖北省外(不含港澳台)',
-                'source' : 'http://www.nhc.gov.cn/yjb/pqt/new_list.shtml',
+                'name' : '中国大陆地区湖北省外',
+                'source' : 'http://www.nhc.gov.cn/yjb/pqt/new_list.shtml, http://wjw.hubei.gov.cn/fbjd/tzgg/',
                 'daily_diag' : [
                     5, 44, 62, 154, 264, 365, 398,
                     480, 619, 705, 762, 755, 669, 726,
@@ -43,6 +43,19 @@
                     1, 0, 0, 1, 0, 1, 0,
                     0, 1, 0, 0, 0, 0, 0,
                     0, 1, 0, 0, 0, 0
+                ],
+                'daily_asym' : [
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null,
+                    null, 83, 18, 9, 26, 24
                 ]
             }, 
             'de' : {
@@ -71,12 +84,12 @@
         // define base options for echarts here
         var covidOptionBase = {
             title: {
-                text: '每日新增确诊，新增病死',
+                text: '每日新增确诊，新增病死，新增无症状',
                 subtext: '数据源：'
             },
             tooltip: {},
             legend: {
-                data:['新增确诊', '新增病死']
+                data:['新增确诊', '新增病死', '新增无症状']
             },
             xAxis: {
                 data:[] 
@@ -104,6 +117,10 @@
                 {
                     name: '新增病死',
                     type: 'bar',
+                },
+                {
+                    name: '新增无症状',
+                    type: 'line',
                 }
             ]
         };
@@ -177,6 +194,10 @@
             covidOption.xAxis.data = date_list;
             covidOption.series[0].data = country_list[key].daily_diag;
             covidOption.series[1].data = country_list[key].daily_death;
+            // add an echart for china's asym vs confirmed
+            if (key == 'cn') {
+                covidOption.series[2].data = country_list[key].daily_asym;
+            }
             // set up options of benford
             benfordOptionBase.timeline.data = date_list;
             var benfordOptions = [];
