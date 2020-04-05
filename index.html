@@ -84,12 +84,12 @@
         // define base options for echarts here
         var covidOptionBase = {
             title: {
-                text: '每日新增确诊，新增病死，新增无症状',
+                text: '每日新增确诊，新增病死',
                 subtext: '数据源：'
             },
             tooltip: {},
             legend: {
-                data:['新增确诊', '新增病死', '新增无症状']
+                data:['新增确诊', '新增病死']
             },
             xAxis: {
                 data:[] 
@@ -118,10 +118,6 @@
                     name: '新增病死',
                     type: 'bar',
                 },
-                {
-                    name: '新增无症状',
-                    type: 'line',
-                }
             ]
         };
         var benfordOptionBase = {
@@ -196,7 +192,14 @@
             covidOption.series[1].data = country_list[key].daily_death;
             // add an echart for china's asym vs confirmed
             if (key == 'cn') {
-                covidOption.series[2].data = country_list[key].daily_asym;
+                covidOption.title.text += '，新增无症状';
+                covidOption.legend.data.push('新增无症状');
+                covidOption.series.push(
+                    {
+                        name : '新增无症状',
+                        type : 'line',
+                        data : country_list['cn'].daily_asym
+                    });
             }
             // set up options of benford
             benfordOptionBase.timeline.data = date_list;
