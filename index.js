@@ -48,3 +48,27 @@ var copy_obj = function(obj) {
     }
     return newobj
 }
+
+var predict = function(data, type) {
+    switch (type) {
+        case 0:
+            return predict_by_last_five(data);
+        default:
+            return null;
+    }
+}
+
+var predict_by_last_five = function(data) {
+    var count = 0;
+    var average = 0;
+    for (let index = data.length; index >= 0; index--) {
+        if (data[index] != null) {
+            average += data[index];
+            count++;
+        }
+        if (count == 5) {
+            break;
+        }
+    }
+    return Math.floor(average / 5);
+}

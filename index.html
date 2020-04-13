@@ -94,6 +94,12 @@
             },
             tooltip: {},
             legend: {
+                orient: 'vertical',
+                top: '10%',
+                right: '1%',
+                textStyle: {
+                    fontSize: '14',
+                },
                 data:['新增确诊', '新增病死']
             },
             xAxis: {
@@ -192,7 +198,6 @@
             var covidOption = copy_obj(covidOptionBase);
             covidOption.title.text = country_list[key].name + covidOption.title.text;
             covidOption.title.subtext = covidOption.title.subtext + country_list[key].source;
-            covidOption.xAxis.data = date_list;
             covidOption.series[0].data = country_list[key].daily_diag;
             covidOption.series[1].data = country_list[key].daily_death;
             // add an echart for china's asym vs confirmed
@@ -206,6 +211,59 @@
                         data : country_list['cn'].daily_asym
                     });
             }
+            // Provide daily new cases prediction if no newest data is given
+            // Do NOT predict new death, since I deeply hope that every patient will be fully recovered!
+            // At least show prediction for 2 days: the last valid day and the next day
+            // For example:
+            // +------------+---------------+----------------+--------------+--------------+
+            // |    today   |  valid days   | last valid day | missing days |   next day   |
+            // +------------+---------------+----------------+--------------+--------------+
+            // | 2020-04-11 | .. 2020-04-10 |   2020-04-10   |     null     |  2020-04-11  |
+            // +------------+---------------+----------------+--------------+--------------+
+            // | 2020-04-11 | .. 2020-04-09 |   2020-04-09   |  2020-04-10  |  2020-04-11  |
+            // +------------+---------------+----------------+--------------+--------------+
+            var least_pred_day = 2;
+            var num_valid = country_list[key].daily_diag.length;
+            var num_missing = date_list.length - num_valid;
+            var num_pred = least_pred_day + num_missing;
+            var preds = new Array(num_pred);
+            preds.forEach(element => {
+                element = null;
+            });
+            // rea-world data before the prediction
+            var before_predict = new Array(num_valid - 1);
+            before_predict.forEach(element => {
+                element = null;
+            });
+            before_predict[num_valid - 2] = country_list[key].daily_diag[num_valid - 2];
+            // prediction for the last valid day
+            preds[0] = predict(country_list[key].daily_diag.slice(0, num_valid - 1), 0);
+            // predict for the missing days and the next day
+            for (let index = 0; index < num_missing + 1; index++) {
+                preds[1 + index] = predict(country_list[key].daily_diag.concat(preds.slice(Math.max(index, 1), preds.length)), 0);
+            }
+            covidOption.title.text += ', 预测新增确诊';
+            covidOption.legend.data.push('预测新增确诊');
+            covidOption.series.push(
+                {
+                    name : '预测新增确诊',
+                    type : 'line',
+                    lineStyle: {
+                        color: 'red',
+                        type: 'dashed'
+                    },
+                    itemStyle: {
+                        borderColor: 'red',
+                        color: 'red'
+                    },
+                    // connect the prediction with read-world data
+                    data: before_predict.concat(preds)
+                }
+            );
+            // add the next day on x axis
+            var tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            covidOption.xAxis.data = date_list.concat(getDiffDate(today, tomorrow));
             // set up options of benford
             benfordOptionBase.timeline.data = date_list;
             var benfordOptions = [];
