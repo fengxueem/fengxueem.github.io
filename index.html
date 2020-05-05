@@ -255,10 +255,11 @@
             });
             before_predict[num_valid - 2] = country_list[key].daily_diag[num_valid - 2];
             // prediction for the last valid day
-            preds[0] = predict(country_list[key].daily_diag.slice(0, num_valid - 1), 0);
+            predict_type = 1;
+            preds[0] = predict(country_list[key].daily_diag.slice(0, num_valid - 1), predict_type);
             // predict for the missing days and the next day
             for (let index = 0; index < num_missing + 1; index++) {
-                preds[1 + index] = predict(country_list[key].daily_diag.concat(preds.slice(Math.max(index, 1), preds.length)), 0);
+                preds[1 + index] = predict(country_list[key].daily_diag.concat(preds.slice(Math.max(index, 1), preds.length)), predict_type);
             }
             covidOption.title.text += ', 预测新增确诊';
             covidOption.legend.data.push('预测新增确诊');

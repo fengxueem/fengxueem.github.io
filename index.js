@@ -52,13 +52,15 @@ var copy_obj = function(obj) {
 var predict = function(data, type) {
     switch (type) {
         case 0:
-            return predict_by_last_five(data);
+            return predict_by_moving_avg(data, 5);
+        case 1:
+            return predict_by_moving_avg(data, 3);
         default:
             return null;
     }
 }
 
-var predict_by_last_five = function(data) {
+var predict_by_moving_avg = function(data, days) {
     var count = 0;
     var average = 0;
     for (let index = data.length; index >= 0; index--) {
@@ -66,9 +68,9 @@ var predict_by_last_five = function(data) {
             average += data[index];
             count++;
         }
-        if (count == 5) {
+        if (count == days) {
             break;
         }
     }
-    return Math.floor(average / 5);
+    return Math.floor(average / days);
 }
