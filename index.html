@@ -138,7 +138,12 @@
                 data:['新增确诊', '新增病死']
             },
             xAxis: {
-                data:[] 
+                data:[],
+                splitArea: {
+                    // split background by 7 days a group
+                    interval: 6,
+                    show: true,
+                },
             },
             yAxis: {},
             dataZoom: [
