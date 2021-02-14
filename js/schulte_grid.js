@@ -18,14 +18,25 @@ function timeToString(time) {
     return `${formattedMM}:${formattedSS}:${formattedMS}`;
 }
 
-// Declare variables to use in our functions below
-
+function refreshRecords(thisTime) {
+    if (thisTime < bestRecord || bestRecord < 0) {
+        bestRecord = thisTime;
+        $("#best_record").html(timeToString(bestRecord));
+    }
+    lastRecord = thisRecord;
+    thisRecord = thisTime;
+    $("#this_record").html(timeToString(thisRecord));
+    $("#last_record").html(timeToString(lastRecord));
+}
 var startTime;
 var elapsedTime = 0;
 var timerInterval;
+var bestRecord = -1;
+var thisRecord = 0;
+var lastRecord = 0;
 
 function start() {
-    startTime = Date.now() - elapsedTime;
+    startTime = Date.now();
     timerInterval = setInterval(function printTime() {
         elapsedTime = Date.now() - startTime;
         $("#display").html(timeToString(elapsedTime));
@@ -36,6 +47,7 @@ function start() {
 function pause() {
     clearInterval(timerInterval);
     $("#display").html("00:00:00");
+    refreshRecords(elapsedTime);
     elapsedTime = 0;
     showButton("PLAY");
 }
@@ -52,28 +64,28 @@ function showButton(buttonKey) {
 $("#playButton").on("click", start);
 $("#pauseButton").on("click", pause);
 
-function drawGridSVG(square_length, square_num) {
+function drawGridSVG(squareLength, squareNum) {
     var data = new Array();
     var xpos = 1; //starting xpos and ypos at 1 so the stroke will show when we make the grid below
     var ypos = 1;
-    var width = square_length;
-    var height = square_length;
-    for (var row = 0; row < square_num; row++) {
+    var width = squareLength;
+    var height = squareLength;
+    for (var row = 0; row < squareNum; row++) {
         data.push(new Array());
-        for (var column = 0; column < square_num; column++) {
+        for (var column = 0; column < squareNum; column++) {
             data[row].push({
                     x: xpos,
                     y: ypos,
-                    width: square_length,
-                    height: square_length
+                    width: squareLength,
+                    height: squareLength
                 })
                 // increment the x position. I.e. move it over by 50 (width variable)
-            xpos += square_length;
+            xpos += squareLength;
         }
         // reset the x position after a row is complete
         xpos = 1;
         // increment the y position for the next row. Move it down 50 (height variable)
-        ypos += square_length;
+        ypos += squareLength;
     }
     return data;
 }
@@ -81,18 +93,18 @@ $("#grid_length_slider").on("input change", function(sliderValue) {
     drawGrid(sliderValue.value.newValue);
 });
 
-function drawGrid(square_num) {
+function drawGrid(squareNum) {
     $("#grid").html("");
     var grid_ele = document.getElementById("grid");
-    var square_length = Math.min(window.innerHeight * 0.85, grid_ele.offsetWidth) / square_num;
-    console.log(square_num);
-    var grid_length = square_length * square_num + 2;
+    var squareLength = Math.min(window.innerHeight * 0.85, grid_ele.offsetWidth) / squareNum;
+    console.log(squareNum);
+    var grid_length = squareLength * squareNum + 2;
     grid_ele.style.paddingLeft = (grid_ele.offsetWidth - grid_length) / 2 + "px";
     var grid = d3.select("#grid")
         .append("svg")
         .attr("width", grid_length + "px")
         .attr("height", grid_length + "px");
-    var gridData = drawGridSVG(square_length, square_num);
+    var gridData = drawGridSVG(squareLength, squareNum);
     var row = grid.selectAll(".row")
         .data(gridData)
         .enter().append("g")
