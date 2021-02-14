@@ -34,8 +34,35 @@ var timerInterval;
 var bestRecord = -1;
 var thisRecord = 0;
 var lastRecord = 0;
+var numQuantity = 25;
+
+function showNums() {
+    var numArray = Array.from({ length: numQuantity }, (_, i) => i + 1);
+    for (let i = numArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [numArray[i], numArray[j]] = [numArray[j], numArray[i]];
+    }
+    d3.select("#grid").selectAll("g.square_num_group")
+        .append("text")
+        .attr("class", "num_inside_grid")
+        .attr("x", function(d) { return d.x + d.width / 10; })
+        .attr("y", function(d) { return d.y + d.height * 5 / 6; })
+        .text(function(d, i) { return numArray[i]; })
+        .style("font-size", function(d) { return d.width / 20 + "em"; });
+}
+
+function blurNums() {
+    d3.select("#grid").selectAll("text.num_inside_grid")
+        .style("fill-opacity", ".25");
+}
+
+function clearNums() {
+    d3.select("#grid").selectAll("text.num_inside_grid").remove();
+}
 
 function start() {
+    clearNums();
+    showNums();
     startTime = Date.now();
     timerInterval = setInterval(function printTime() {
         elapsedTime = Date.now() - startTime;
@@ -45,11 +72,12 @@ function start() {
 }
 
 function pause() {
+    refreshRecords(elapsedTime);
     clearInterval(timerInterval);
     $("#display").html("00:00:00");
-    refreshRecords(elapsedTime);
     elapsedTime = 0;
     showButton("PLAY");
+    blurNums();
 }
 
 function showButton(buttonKey) {
@@ -89,15 +117,16 @@ function drawGridSVG(squareLength, squareNum) {
     }
     return data;
 }
+
 $("#grid_length_slider").on("input change", function(sliderValue) {
     drawGrid(sliderValue.value.newValue);
+    numQuantity = sliderValue.value.newValue * sliderValue.value.newValue;
 });
 
 function drawGrid(squareNum) {
     $("#grid").html("");
     var grid_ele = document.getElementById("grid");
     var squareLength = Math.min(window.innerHeight * 0.85, grid_ele.offsetWidth) / squareNum;
-    console.log(squareNum);
     var grid_length = squareLength * squareNum + 2;
     grid_ele.style.paddingLeft = (grid_ele.offsetWidth - grid_length) / 2 + "px";
     var grid = d3.select("#grid")
@@ -111,7 +140,9 @@ function drawGrid(squareNum) {
         .attr("class", "row");
     var column = row.selectAll(".square")
         .data(function(d) { return d; })
-        .enter().append("rect")
+        .enter().append("g")
+        .attr("class", "square_num_group")
+        .append("rect")
         .attr("class", "square")
         .attr("x", function(d) { return d.x; })
         .attr("y", function(d) { return d.y; })
