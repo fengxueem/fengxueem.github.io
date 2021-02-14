@@ -1,0 +1,40 @@
+.grid_size_icon {
+    margin-right: 20px;
+}
+
+.stopwatch {
+    display: grid;
+    justify-items: center;
+    grid-row-gap: 23px;
+    padding-top: 25px;
+}
+
+.circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid;
+}
+
+.time {
+    font-family: "Roboto Mono", monospace;
+    font-weight: 300;
+    font-size: 48px;
+}
+
+button {
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+    border: none;
+    margin: 0;
+    outline: none;
+}
+
+#playButton {
+    display: block;
+}
+
+#pauseButton {
+    display: none;
+}
